@@ -2,10 +2,12 @@
 
 namespace BeyondCode\Vouchers;
 
+use BeyondCode\Vouchers\Exceptions\VoucherAlreadyRedeemed;
 use BeyondCode\Vouchers\Exceptions\VoucherExpired;
 use BeyondCode\Vouchers\Exceptions\VoucherIsInvalid;
 use BeyondCode\Vouchers\Models\Voucher;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Auth;
 
 class Vouchers
 {
@@ -48,10 +50,10 @@ class Vouchers
 
         foreach ($this->generate($amount) as $voucherCode) {
             $vouchers[] = Voucher::create([
-                'model_id' => $model->getKey(),
+                'model_id'   => $model->getKey(),
                 'model_type' => $model->getMorphClass(),
-                'code' => $voucherCode,
-                'data' => $data,
+                'code'       => $voucherCode,
+                'data'       => $data,
                 'expires_at' => $expires_at,
             ]);
         }
@@ -61,19 +63,28 @@ class Vouchers
 
     /**
      * @param string $code
-     * @throws VoucherIsInvalid
-     * @throws VoucherExpired
      * @return Voucher
+     * @throws VoucherExpired
+     * @throws VoucherIsInvalid
      */
-    public function check(string $code)
+    public function check(string $code, ?int $modelId = null)
     {
-        $voucher = Voucher::whereCode($code)->first();
+        $query = Voucher::whereCode($code);
+
+        if (is_int($modelId)) {
+            $query->where('model_id', $modelId);
+        }
+
+        $voucher = $query->first();
 
         if ($voucher === null) {
             throw VoucherIsInvalid::withCode($code);
         }
         if ($voucher->isExpired()) {
             throw VoucherExpired::create($voucher);
+        }
+        if ($voucher->users()->wherePivot('user_id', Auth::id())->exists()) {
+            throw VoucherAlreadyRedeemed::create($voucher);
         }
 
         return $voucher;

@@ -18,9 +18,9 @@ trait CanRedeemVouchers
      * @throws VoucherAlreadyRedeemed
      * @return mixed
      */
-    public function redeemCode(string $code)
+    public function redeemCode(string $code, ?int $modelId = null)
     {
-        $voucher = Vouchers::check($code);
+        $voucher = Vouchers::check($code, $modelId);
 
         if ($voucher->users()->wherePivot('user_id', $this->id)->exists()) {
             throw VoucherAlreadyRedeemed::create($voucher);
@@ -45,9 +45,9 @@ trait CanRedeemVouchers
      * @throws VoucherAlreadyRedeemed
      * @return mixed
      */
-    public function redeemVoucher(Voucher $voucher)
+    public function redeemVoucher(Voucher $voucher, ?int $modelId = null)
     {
-        return $this->redeemCode($voucher->code);
+        return $this->redeemCode($voucher->code, $modelId);
     }
 
     /**
