@@ -76,6 +76,6 @@ class Voucher extends Model
      */
     public function scopeOwned($query)
     {
-        return $query->where('owner_id', auth()->id);
+        return $query->where('owner_id', auth()->id());
     }
 }
