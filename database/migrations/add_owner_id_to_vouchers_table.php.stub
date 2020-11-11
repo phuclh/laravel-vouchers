@@ -1,0 +1,32 @@
+<?php
+
+use Illuminate\Support\Facades\Schema;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Database\Migrations\Migration;
+
+class AddOwnerIdToVouchersTable extends Migration
+{
+    /**
+     * Run the migrations.
+     */
+    public function up()
+    {
+        $voucherTable = config('vouchers.table', 'vouchers');
+
+        Schema::table($voucherTable, function (Blueprint $table) {
+            $table->unsignedBigInteger('owner_id')->nullable()->index();
+        });
+    }
+
+    /**
+     * Reverse the migrations.
+     */
+    public function down()
+    {
+        $voucherTable = config('vouchers.table', 'vouchers');
+
+        Schema::table($voucherTable, function (Blueprint $table) {
+            $table->dropColumn('owner_id');
+        });
+    }
+}

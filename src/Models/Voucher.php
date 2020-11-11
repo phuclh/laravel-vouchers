@@ -35,6 +35,13 @@ class Voucher extends Model
         $this->table = config('vouchers.table', 'vouchers');
     }
 
+    protected static function booted()
+    {
+        static::creating(function (self $voucher) {
+            $voucher->owner_id = auth()->id() ?? null;
+        });
+    }
+
     /**
      * Get the users who redeemed this voucher.
      *
