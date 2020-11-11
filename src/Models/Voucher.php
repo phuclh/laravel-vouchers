@@ -38,7 +38,7 @@ class Voucher extends Model
     protected static function booted()
     {
         static::creating(function (self $voucher) {
-            $voucher->owner_id = auth()->id() ?? null;
+            $voucher->owner_id = auth()->id();
         });
     }
 
@@ -68,5 +68,14 @@ class Voucher extends Model
     public function isExpired()
     {
         return $this->expires_at ? Carbon::now()->gte($this->expires_at) : false;
+    }
+
+    /**
+     * @param $query
+     * @return mixed
+     */
+    public function scopeOwned($query)
+    {
+        return $query->where('owner_id', auth()->id);
     }
 }
